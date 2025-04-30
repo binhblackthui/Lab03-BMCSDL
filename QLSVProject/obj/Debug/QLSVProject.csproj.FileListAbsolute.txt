@@ -1,0 +1,9 @@
+C:\Users\trant\OneDrive\Desktop\QLSVProject\QLSVProject\obj\Debug\QLSVProject.csproj.AssemblyReference.cache
+C:\Users\trant\OneDrive\Desktop\QLSVProject\QLSVProject\obj\Debug\QLSVProject.Properties.Resources.resources
+C:\Users\trant\OneDrive\Desktop\QLSVProject\QLSVProject\obj\Debug\QLSVProject.csproj.GenerateResource.cache
+C:\Users\trant\OneDrive\Desktop\QLSVProject\QLSVProject\obj\Debug\QLSVProject.csproj.CoreCompileInputs.cache
+C:\Users\trant\OneDrive\Desktop\QLSVProject\QLSVProject\bin\Debug\QLSVProject.exe.config
+C:\Users\trant\OneDrive\Desktop\QLSVProject\QLSVProject\bin\Debug\QLSVProject.exe
+C:\Users\trant\OneDrive\Desktop\QLSVProject\QLSVProject\bin\Debug\QLSVProject.pdb
+C:\Users\trant\OneDrive\Desktop\QLSVProject\QLSVProject\obj\Debug\QLSVProject.exe
+C:\Users\trant\OneDrive\Desktop\QLSVProject\QLSVProject\obj\Debug\QLSVProject.pdb
