@@ -3,8 +3,10 @@ using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
 using System.Drawing;
+using QLSVProject.Helpers;
 using System.Windows.Forms;
-
+using System.IO;
+using QLSVProject.Forms;
 namespace QLSVNhomApp
 {
     public partial class EmployeeInfoForm : Form
@@ -150,18 +152,23 @@ namespace QLSVNhomApp
             this.Controls.AddRange(new Control[] { lblManv, txtManv, lblHoten, txtHoten, lblEmail, txtEmail, lblLuong, txtLuong, btnSave, btnCancel });
         }
 
+
         private void LoadEmployeeInfo()
         {
             try
             {
                 using (SqlConnection conn = new SqlConnection(connectionString))
                 {
+                    
+                    string privateKey = SecurityHelper.LoadPrivateKeyFromFile(manv);
+                    privateKey = SecurityHelper.DecryptPrivateWithPassword(privateKey, mk);
+                    string passwordHash = SecurityHelper.HashPasswordSHA1(mk);
                     conn.Open();
-                    using (SqlCommand cmd = new SqlCommand("SP_SEL_PUBLIC_NHANVIEN", conn))
+                    using (SqlCommand cmd = new SqlCommand("SP_SEL_PUBLIC_ENCRYPT_NHANVIEN", conn))
                     {
                         cmd.CommandType = CommandType.StoredProcedure;
                         cmd.Parameters.AddWithValue("@TENDN", tendn);
-                        cmd.Parameters.AddWithValue("@MK", mk);
+                        cmd.Parameters.AddWithValue("@MK", passwordHash);
 
                         using (SqlDataReader reader = cmd.ExecuteReader())
                         {
@@ -170,7 +177,7 @@ namespace QLSVNhomApp
                                 txtManv.Text = reader["MANV"].ToString();
                                 txtHoten.Text = reader["HOTEN"].ToString();
                                 txtEmail.Text = reader["EMAIL"].ToString();
-                                txtLuong.Text = reader["LUONGCB"].ToString();
+                                txtLuong.Text = SecurityHelper.DecryptWithPrivateKey(reader["LUONG"].ToString(), privateKey);
                             }
                             else
                             {
@@ -202,8 +209,9 @@ namespace QLSVNhomApp
             {
                 using (SqlConnection conn = new SqlConnection(connectionString))
                 {
+                    
                     conn.Open();
-                    using (SqlCommand cmd = new SqlCommand("SP_UPD_PUBLIC_NHANVIEN", conn))
+                    using (SqlCommand cmd = new SqlCommand("SP_UPD_PUBLIC_ENCRYPT_NHANVIEN", conn))
                     {
                         cmd.CommandType = CommandType.StoredProcedure;
                         cmd.Parameters.AddWithValue("@MANV", txtManv.Text);
@@ -221,6 +229,14 @@ namespace QLSVNhomApp
                 MessageBox.Show("Lỗi: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+
+
+
+       
+
+      
+
+
 
         private void BtnCancel_Click(object sender, EventArgs e)
         {

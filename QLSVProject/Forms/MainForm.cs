@@ -11,6 +11,7 @@ namespace QLSVNhomApp
         private string tendn; // Thêm để lưu tên đăng nhập
         private string password;
         private Button btnViewInfo;
+        private Button btnEmpList;
         private Button btnClassManagement;
         private Button btnLogout;
         private Label lblWelcome;
@@ -59,13 +60,32 @@ namespace QLSVNhomApp
             };
             btnViewInfo.FlatAppearance.BorderSize = 0;
             btnViewInfo.Click += BtnViewInfo_Click;
+            // Button Employee List
+            btnEmpList = new Button
+            {
+                Text = "Quản lý nhân viên",
+                Size = new Size(buttonWidth, buttonHeight),
+                Location = new Point(centerX, 190),
+                BackColor = Color.FromArgb(0, 122, 204),
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat,
+                Font = new Font("Segoe UI", 10, FontStyle.Bold)
+            };
+            btnEmpList.FlatAppearance.BorderSize = 0;
+            btnEmpList.Click += (s, e) =>
+            {
+                var empListForm = new EmployeeListForm(this.manv,this);
+                this.Hide();
+                empListForm.ShowDialog();
+                this.Show();
+            };
 
             // Button Class Management
             btnClassManagement = new Button
             {
                 Text = "Quản lý lớp học",
                 Size = new Size(buttonWidth, buttonHeight),
-                Location = new Point(centerX, 190),
+                Location = new Point(centerX, 260),
                 BackColor = Color.FromArgb(0, 122, 204),
                 ForeColor = Color.White,
                 FlatStyle = FlatStyle.Flat,
@@ -79,7 +99,7 @@ namespace QLSVNhomApp
             {
                 Text = "Đăng xuất",
                 Size = new Size(buttonWidth, buttonHeight),
-                Location = new Point(centerX, 260),
+                Location = new Point(centerX, 330),
                 BackColor = Color.FromArgb(220, 53, 69),
                 ForeColor = Color.White,
                 FlatStyle = FlatStyle.Flat,
@@ -89,7 +109,7 @@ namespace QLSVNhomApp
             btnLogout.Click += BtnLogout_Click;
 
             // Add controls
-            this.Controls.AddRange(new Control[] { lblWelcome, btnViewInfo, btnClassManagement, btnLogout });
+            this.Controls.AddRange(new Control[] { lblWelcome,btnEmpList ,btnViewInfo, btnClassManagement, btnLogout });
 
             // Resize event để canh giữa khi thay đổi kích thước form
             this.Resize += (s, e) =>

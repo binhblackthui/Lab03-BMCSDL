@@ -3,8 +3,11 @@ using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
 using System.Drawing;
+using System.Security.Cryptography;
+using System.Text;
 using System.Windows.Forms;
-
+using System.IO;
+using QLSVProject.Helpers;
 namespace QLSVNhomApp
 {
     public partial class ScoreManagementForm : Form
@@ -174,16 +177,39 @@ namespace QLSVNhomApp
 
         private void LoadHocPhan()
         {
+
             try
             {
                 using (SqlConnection conn = new SqlConnection(connectionString))
                 {
+                    
+                    string privateKey = SecurityHelper.LoadPrivateKeyFromFile(manv);
+                    privateKey = SecurityHelper.DecryptWithPrivateKey(privateKey, password); // Giải mã private key bằng mật khẩu
                     conn.Open();
-                    using (SqlCommand cmd = new SqlCommand("SP_SEL_PUBLIC_BANGDIEM", conn))
+                    using (SqlCommand cmd = new SqlCommand("SP_SEL_PUBLIC_ENCRYPT_BANGDIEM", conn))
                     {
                         cmd.CommandType = CommandType.StoredProcedure;
                         cmd.Parameters.AddWithValue("@MASV", masv);
-                        cmd.Parameters.AddWithValue("@MANV", manv);
+                        using (SqlDataAdapter adapter = new SqlDataAdapter(cmd))
+                        {
+                            DataTable dt = new DataTable();
+                            adapter.Fill(dt);
+                            if (dt.Rows.Count == 0)
+                            {
+                                MessageBox.Show("Không có dữ liệu bảng điểm.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                                return;
+                            }
+                            foreach (DataRow row in dt.Rows)
+                            {
+                                if (row["DIEMTHI"] != DBNull.Value)
+                                {
+                                    row["DIEMTHI"] = SecurityHelper.DecryptWithPrivateKey(row["DIEMTHI"].ToString(), privateKey);
+                                }
+
+                            }
+                            dgvHocPhan.DataSource = dt;
+                        }
+                        /*cmd.Parameters.AddWithValue("@MANV", manv);
                         cmd.Parameters.AddWithValue("@MK", password);
                         using (SqlDataAdapter adapter = new SqlDataAdapter(cmd))
                         {
@@ -207,7 +233,7 @@ namespace QLSVNhomApp
                                 }
                             }
                             dgvHocPhan.DataSource = dt;
-                        }
+                        }*/
                     }
                 }
             }
@@ -243,18 +269,39 @@ namespace QLSVNhomApp
                     MessageBox.Show("Điểm thi phải là số nguyên.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
                 }
+                if (diemThi < 0 || diemThi > 10)
+                {
+                    MessageBox.Show("Điểm thi phải nằm trong khoảng từ 0 đến 10.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+                string sql = "SELECT PUBKEY FROM NHANVIEN WHERE MANV = @MANV";
+                string publicKey = "";
+                using (SqlConnection conn = new SqlConnection(connectionString))
+                {
+                    conn.Open();
+                    using (SqlCommand cmd = new SqlCommand(sql, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@MANV", manv);
+                        publicKey = cmd.ExecuteScalar()?.ToString();
+                    }
+                }
+                if(string.IsNullOrEmpty(publicKey))
+                {
+                    MessageBox.Show("Không tìm thấy khóa công khai.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+               
 
                 using (SqlConnection conn = new SqlConnection(connectionString))
                 {
                     conn.Open();
-                    using (SqlCommand cmd = new SqlCommand("SP_UPD_PUBLIC_BANGDIEM", conn))
+                    using (SqlCommand cmd = new SqlCommand("SP_UPD_PUBLIC_ENCRYPT_BANGDIEM", conn))
                     {
                         cmd.CommandType = CommandType.StoredProcedure;
                         cmd.Parameters.AddWithValue("@MASV", masv);
                         cmd.Parameters.AddWithValue("@MAHP", txtMAHP.Text);
-                        cmd.Parameters.AddWithValue("@DIEMTHI", diemThi);
-                        cmd.Parameters.AddWithValue("@MANV", manv);
-                        cmd.Parameters.AddWithValue("@MK", password);
+                        cmd.Parameters.AddWithValue("@DIEMTHI", SecurityHelper.EncryptWithPublicKey(diemThi.ToString(), publicKey));
+
                         cmd.ExecuteNonQuery();
 
                         MessageBox.Show("Lưu điểm thành công!", "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -268,5 +315,7 @@ namespace QLSVNhomApp
                 MessageBox.Show("Lỗi: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+        
+
     }
 }

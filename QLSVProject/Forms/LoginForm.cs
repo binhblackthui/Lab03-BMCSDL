@@ -4,6 +4,10 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Drawing;
 using System.Windows.Forms;
+using QLSVProject.Forms;
+using QLSVProject.Helpers;
+
+
 
 namespace QLSVNhomApp
 {
@@ -16,7 +20,7 @@ namespace QLSVNhomApp
         private Label lblUsername;
         private Label lblPassword;
         private Label lblTitle;
-
+        private LinkLabel lnkRegister;
         public LoginForm()
         {
             InitializeComponent();
@@ -130,6 +134,31 @@ namespace QLSVNhomApp
                 Location = new Point(175, 250),
                 Size = new Size(150, 40)
             };
+
+
+            // Replace the declaration of lnkRegister with the correct type and properties
+
+            // Replace the declaration of lnkRegister with the correct type and properties
+            lnkRegister = new LinkLabel
+            {
+                Text = "Chưa có tài khoản? Đăng ký ngay!",
+                Font = new Font("Segoe UI", 9),
+                Location = new Point(140, 300),
+                Size = new Size(220, 25),
+                ForeColor = Color.Blue,
+                Cursor = Cursors.Hand,
+                TextAlign = ContentAlignment.MiddleCenter
+            };
+
+            // Add the event handler for the LinkLabel
+            lnkRegister.Click += lnkRegister_Click;
+
+            // Ensure the LinkLabel is added to the form's controls
+            this.Controls.Add(lnkRegister);
+
+
+
+
             btnLogin.Click += BtnLogin_Click;
             btnLogin.MouseEnter += (s, e) => btnLogin.BackColor = Color.FromArgb(30, 144, 255);
             btnLogin.MouseLeave += (s, e) => btnLogin.BackColor = Color.FromArgb(0, 122, 204);
@@ -138,6 +167,8 @@ namespace QLSVNhomApp
             this.Controls.AddRange(new Control[] { lblTitle, txtUsername, txtPassword, btnLogin, lblUsername, lblPassword });
         }
 
+        
+
         private void BtnLogin_Click(object sender, EventArgs e)
         {
             if (txtUsername.Text == "Nhập tên đăng nhập" || txtPassword.Text == "Nhập mật khẩu")
@@ -145,17 +176,18 @@ namespace QLSVNhomApp
                 MessageBox.Show("Vui lòng nhập tên đăng nhập và mật khẩu.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
+            string hashedPassword = SecurityHelper.HashPasswordSHA1(txtPassword.Text);
 
             try
             {
                 using (SqlConnection conn = new SqlConnection(connectionString))
                 {
                     conn.Open();
-                    using (SqlCommand cmd = new SqlCommand("SP_SEL_PUBLIC_NHANVIEN", conn))
+                    using (SqlCommand cmd = new SqlCommand("SP_SEL_PUBLIC_ENCRYPT_NHANVIEN", conn))
                     {
                         cmd.CommandType = CommandType.StoredProcedure;
                         cmd.Parameters.AddWithValue("@TENDN", txtUsername.Text);
-                        cmd.Parameters.AddWithValue("@MK", txtPassword.Text);
+                        cmd.Parameters.AddWithValue("@MK", hashedPassword);
 
                         using (SqlDataReader reader = cmd.ExecuteReader())
                         {
@@ -176,10 +208,19 @@ namespace QLSVNhomApp
                     }
                 }
             }
+
             catch (Exception ex)
             {
                 MessageBox.Show("Lỗi: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+        private void lnkRegister_Click(object sender, EventArgs e)
+        {
+            var registerForm = new RegisterForm();
+            registerForm.FormClosed += (s, args) => Application.Exit();
+            registerForm.Show();
+            this.Hide();
+        }
     }
+
 }

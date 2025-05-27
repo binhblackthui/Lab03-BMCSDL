@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Windows.Forms;
+using QLSVProject.Forms;
 
 namespace QLSVNhomApp
 {
@@ -10,7 +11,7 @@ namespace QLSVNhomApp
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new LoginForm());
+            Application.Run(new LoginForm() );
         }
     }
 }

@@ -214,7 +214,7 @@ namespace QLSVNhomApp
                 using (SqlConnection conn = new SqlConnection(connectionString))
                 {
                     conn.Open();
-                    using (SqlCommand cmd = new SqlCommand("SP_UPD_PUBLIC_SINHVIEN", conn))
+                    using (SqlCommand cmd = new SqlCommand("SP_UP_PUBLIC_SINHVIEN", conn))
                     {
                         cmd.CommandType = CommandType.StoredProcedure;
                         cmd.Parameters.AddWithValue("@MASV", txtMASV.Text);
